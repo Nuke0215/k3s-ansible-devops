@@ -4,9 +4,11 @@ NODE_BOXES = ['bento/ubuntu-24.04', 'bento/ubuntu-24.04', 'bento/ubuntu-24.04', 
 NODE_CPUS = 2
 NODE_MEMORY = 2048
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
-NETWORK_PREFIX = "10.10.10"
+NETWORK_PREFIX = "192.168.56"
 
 def provision(vm, role, node_num)
+  # Disable synced folders completely for WSL compatibility
+  vm.synced_folder ".", "/vagrant", disabled: true, type: "rsync"
   vm.box = NODE_BOXES[node_num]
   vm.hostname = role
   # We use a private network because the default IPs are dynamically assigned 
@@ -26,7 +28,7 @@ def provision(vm, role, node_num)
       "k3s_cluster:children" => ["server", "agent"],
     }
     ansible.extra_vars = {
-      k3s_version: "v1.28.14+k3s1",
+      k3s_version: "v1.33.1+k3s1",
       api_endpoint: "#{NETWORK_PREFIX}.100",
       # Required for vagrant ansible provisioner
       token: "myvagrant",
